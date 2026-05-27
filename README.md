@@ -34,4 +34,4 @@ Personal dashboard that aggregates tagged activity from multiple platforms into 
 
 ---
 
-Built by Sarah Park, May 2026
+Built by Sarah Park
