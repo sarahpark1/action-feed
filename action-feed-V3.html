@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Action Feed — Insulet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Courier+Prime:wght@400;700&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:       #0e0e0e;
+  --surface:  #161616;
+  --surface2: #1e1e1e;
+  --surface3: #262626;
+  --border:   rgba(255,255,255,0.09);
+  --border2:  rgba(255,255,255,0.16);
+  --border3:  rgba(255,255,255,0.26);
+
+  --white:  #ffffff;
+  --off:    #e8e8e8;
+  --mid:    #9c9c9c;
+  --dim:    #5a5a5a;
+  --dimmer: #383838;
+
+  --red:    #e8290b;
+  --red-d:  rgba(232,41,11,0.12);
+
+  --figma:    #1ecf87;
+  --figma-d:  rgba(30,207,135,0.10);
+  --teams:    #7b6cff;
+  --teams-d:  rgba(123,108,255,0.10);
+  --confluence: #1868db;
+  --confluence-d: rgba(24,104,219,0.10);
+  --jira:     #0052cc;
+  --jira-d:   rgba(0,82,204,0.10);
+  --cal:      #ffb547;
+  --cal-d:    rgba(255,181,71,0.10);
+
+  --lcd: 'Share Tech Mono', monospace;
+  --body: 'DM Sans', sans-serif;
+}
+
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--off);
+  font-family: var(--lcd);
+  font-size: 12px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── dot grid ── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ═══════════════════════════════════════════
+   HEADER BLOCK
+═══════════════════════════════════════════ */
+.header {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border2);
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  align-items: stretch;
+}
+
+/* ident */
+.h-ident {
+  border-right: 1px solid var(--border2);
+  padding: 20px 22px 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.h-tag {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.h-wordmark {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--white);
+  line-height: 1.3;
+}
+
+.h-count-block {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.h-count-num {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--white);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.h-count-lbl {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* clocks */
+.h-clocks {
+  border-right: 1px solid var(--border2);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.clock-cell {
+  border-right: 1px solid var(--border);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+.clock-cell:last-child { border-right: none; }
+
+.clock-city {
+  font-size: 8px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.clock-time {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--white);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-sec {
+  font-size: 13px;
+  color: var(--dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.clock-colon {
+  animation: blink 1s step-start infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+.clock-date {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* system status panel */
+.h-status {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.sys-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.sys-key {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.sys-val {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+.sys-val.live  { color: var(--figma); }
+.sys-val.demo  { color: var(--cal); }
+
+.sync-btn {
+  margin-top: 4px;
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border3);
+  color: var(--mid);
+  font-family: var(--lcd);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+.sync-btn:hover { border-color: var(--white); color: var(--white); }
+.sync-btn svg { width: 11px; height: 11px; }
+
+/* ═══════════════════════════════════════════
+   SPRINT BAR
+═══════════════════════════════════════════ */
+.sprint-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+  display: grid;
+  grid-template-columns: 240px 1fr 220px;
+  align-items: stretch;
+}
+
+.sprint-label-cell {
+  border-right: 1px solid var(--border2);
+  padding: 0 22px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sprint-tag {
+  font-size: 8px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.sprint-num {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--white);
+}
+
+/* work-day lines */
+.sprint-lines-cell {
+  border-right: 1px solid var(--border2);
+  padding: 10px 24px;
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+}
+
+.sprint-day-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.sprint-day-line {
+  width: 5px;
+  height: 32px;
+  background: var(--dimmer);
+  position: relative;
+  overflow: hidden;
+}
+
+/* filled portion — set via inline style on .sprint-day-fill */
+.sprint-day-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--white);
+  transition: height 0.8s ease;
+}
+
+.sprint-day-fill.past   { background: var(--white); }
+.sprint-day-fill.active { background: var(--mid); }
+
+.sprint-day-n {
+  font-size: 7px;
+  letter-spacing: 0.1em;
+  color: var(--dimmer);
+}
+.sprint-day-n.past   { color: var(--dim); }
+.sprint-day-n.active { color: var(--mid); }
+
+.sprint-meta-cell {
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+.sprint-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.sprint-stat-num {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--white);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.sprint-stat-lbl {
+  font-size: 7px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  text-align: center;
+}
+
+.sprint-pct-bar {
+  width: 1px;
+  height: 32px;
+  background: var(--border2);
+}
+
+/* ═══════════════════════════════════════════
+   FILTER / SEARCH TOOLBAR
+═══════════════════════════════════════════ */
+.toolbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border2);
+  display: flex;
+  align-items: stretch;
+}
+
+.search-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 240px;
+  flex-shrink: 0;
+  padding: 0 22px;
+  border-right: 1px solid var(--border2);
+}
+.search-cell svg { width: 12px; height: 12px; color: var(--dim); flex-shrink: 0; }
+.search-input {
+  background: none; border: none; outline: none;
+  color: var(--off); font-family: var(--lcd); font-size: 10px;
+  letter-spacing: 0.06em; width: 100%; padding: 11px 0;
+}
+.search-input::placeholder { color: var(--dim); }
+
+/* tab strip */
+.tab-strip {
+  display: flex;
+  align-items: stretch;
+  flex: 1;
+}
+
+.tab-btn {
+  display: flex; align-items: center; gap: 7px;
+  background: none; border: none; border-right: 1px solid var(--border);
+  color: var(--dim); font-family: var(--lcd); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  padding: 0 18px; cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  white-space: nowrap; user-select: none; position: relative;
+}
+.tab-btn:last-child { border-right: none; }
+.tab-btn:hover { color: var(--off); background: var(--surface2); }
+
+.tab-btn.active {
+  color: var(--white);
+  background: var(--surface2);
+}
+
+.tab-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: var(--white);
+}
+
+.tab-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.tab-btn.active .tab-dot { opacity: 0; }
+
+.unread-pip {
+  font-family: var(--lcd); font-size: 8px; font-weight: 700;
+  background: var(--red); color: #fff;
+  padding: 1px 5px; min-width: 18px; text-align: center;
+  border-radius: 0;
+}
+.tab-btn.active .unread-pip { background: var(--off); color: var(--bg); }
+
+/* ═══════════════════════════════════════════
+   MAIN CONTENT
+═══════════════════════════════════════════ */
+.content {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  flex: 1;
+}
+
+/* ── sidebar ── */
+.sidebar {
+  border-right: 1px solid var(--border2);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+
+.sb-section {
+  border-bottom: 1px solid var(--border);
+  padding: 16px 18px;
+}
+
+.sb-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 12px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+}
+
+.stat-cell {
+  background: var(--bg);
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-num {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--white);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-lbl {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.source-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.legend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.legend-src {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--mid);
+}
+
+.ldot {
+  width: 6px; height: 6px;
+  flex-shrink: 0;
+}
+
+.legend-n {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  color: var(--dim);
+}
+
+/* config */
+.cfg-label-txt {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  margin-bottom: 8px;
+}
+
+.cfg-input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  color: var(--off);
+  font-family: var(--lcd);
+  font-size: 9px;
+  padding: 7px 9px;
+  outline: none;
+  margin-bottom: 6px;
+  transition: border-color 0.12s;
+}
+.cfg-input:focus { border-color: var(--border3); }
+
+.cfg-btn {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border3);
+  color: var(--mid);
+  font-family: var(--lcd);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  padding: 8px 0;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.cfg-btn:hover { border-color: var(--white); color: var(--white); }
+
+.cfg-hint {
+  font-size: 8px;
+  letter-spacing: 0.04em;
+  color: var(--dim);
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+.mark-all-btn {
+  font-family: var(--lcd);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+  background: none;
+  border: 1px solid var(--border2);
+  padding: 8px 0;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.mark-all-btn:hover { border-color: var(--border3); color: var(--mid); }
+
+/* auth notice */
+.auth-note {
+  background: var(--red-d);
+  border-left: 2px solid var(--red);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 14px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: var(--mid);
+  line-height: 1.6;
+  display: none;
+}
+.auth-note a { color: var(--red); }
+
+/* ── feed column ── */
+.feed-col {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.feed-meta {
+  border-bottom: 1px solid var(--border);
+  padding: 7px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  flex-shrink: 0;
+}
+
+.feed-count {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+/* ── SCROLL VIEWPORT ── */
+.feed-viewport {
+  overflow: hidden;
+  flex: 1;
+  position: relative;
+}
+
+/* the actual scrollable list, animated on tab change */
+.feed-list {
+  padding: 0 0 32px;
+  will-change: transform, opacity;
+}
+
+.feed-list.slide-out-left {
+  animation: slideOutLeft 0.28s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
+
+.feed-list.slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0, 0, 0.2, 1) forwards;
+}
+
+@keyframes slideOutLeft {
+  from { transform: translateX(0);    opacity: 1; }
+  to   { transform: translateX(-60px); opacity: 0; }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(48px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* date divider */
+.date-div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 18px 20px 6px;
+}
+.date-div span {
+  font-size: 8px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--dim); white-space: nowrap;
+}
+.date-div::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ── CARD ── */
+.card {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 0 14px;
+  align-items: start;
+  margin: 6px 16px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  position: relative;
+  transition: border-color 0.12s;
+  animation: cardIn 0.2s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity:0; transform:translateY(4px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.card:hover {
+  border-color: var(--border3);
+  background: var(--surface2);
+}
+
+.card.unseen {
+  border-left: 2px solid var(--red);
+}
+
+.dot-col { display: flex; justify-content: center; padding-top: 5px; }
+.u-dot { width: 5px; height: 5px; background: var(--red); flex-shrink: 0; }
+
+.card-body { min-width: 0; }
+
+.card-top {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 5px; flex-wrap: wrap;
+}
+
+.src-tag {
+  font-family: var(--lcd);
+  font-size: 7px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase;
+  padding: 2px 6px; border: 1px solid currentColor; flex-shrink: 0;
+}
+.src-figma      { color: var(--figma);      background: var(--figma-d); }
+.src-teams      { color: var(--teams);      background: var(--teams-d); }
+.src-confluence { color: var(--confluence); background: var(--confluence-d); }
+.src-jira       { color: var(--jira);       background: var(--jira-d); }
+.src-calendar   { color: var(--cal);        background: var(--cal-d); }
+
+.card-sender {
+  font-family: var(--body);
+  font-size: 14px; font-weight: 500;
+  color: var(--white); letter-spacing: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.card-loc {
+  font-family: var(--lcd);
+  font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim);
+  margin-left: auto; white-space: nowrap; flex-shrink: 0;
+}
+
+.card-msg {
+  font-family: var(--body);
+  font-size: 13px; font-weight: 400; color: var(--mid);
+  line-height: 1.6;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  margin-bottom: 9px;
+}
+
+.card-foot {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+
+.card-time {
+  font-family: var(--lcd);
+  font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim);
+}
+
+.st-pill {
+  font-family: var(--lcd);
+  font-size: 7px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 2px 6px; border: 1px solid currentColor;
+}
+.st-inbox   { color: var(--dim);   border-color: var(--border2); }
+.st-done    { color: var(--figma); border-color: var(--figma);   background: var(--figma-d); }
+.st-snoozed { color: var(--cal);   border-color: var(--cal);     background: var(--cal-d); }
+
+.st-select {
+  background: var(--surface2); border: 1px solid var(--border2); color: var(--dim);
+  font-family: var(--lcd); font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 2px 18px 2px 6px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='7' height='4'%3E%3Cpath d='M0 0l3.5 4L7 0z' fill='%235a5a5a'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 5px center;
+  transition: border-color 0.12s;
+}
+.st-select:hover { border-color: var(--border3); }
+.st-select option { background: var(--surface2); }
+
+.card-actions {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 8px; padding-top: 1px; flex-shrink: 0;
+}
+
+.open-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: none; border: 1px solid var(--border2); color: var(--dim);
+  font-family: var(--lcd); font-size: 8px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 5px 10px; text-decoration: none; cursor: pointer; transition: all 0.12s; white-space: nowrap;
+}
+.open-btn:hover { border-color: var(--white); color: var(--white); }
+.open-btn svg { width: 8px; height: 8px; }
+
+.eye-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; background: none; border: 1px solid transparent;
+  color: var(--dim); cursor: pointer; transition: all 0.12s;
+}
+.eye-btn:hover { border-color: var(--border2); color: var(--mid); }
+.eye-btn svg { width: 12px; height: 12px; }
+
+/* ── states ── */
+.empty-state, .loading-state {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; padding: 64px 24px; text-align: center;
+}
+.spinner { width: 20px; height: 20px; border: 1.5px solid var(--border2); border-top-color: var(--white); border-radius: 50%; animation: spin 0.6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-title { font-size: 9px; font-weight: 700; letter-spacing: 0.26em; text-transform: uppercase; color: var(--dim); }
+.state-sub   { font-size: 8px; letter-spacing: 0.12em; color: var(--red); }
+
+/* ── footer ── */
+.page-footer {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding: 10px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.footer-l { font-size: 8px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+.footer-r { font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dimmer); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="h-ident">
+      <div>
+        <div class="h-wordmark">Action<br>Feed</div>
+        <div class="h-tag" id="headerDate">—</div>
+      </div>
+      <div class="h-count-block">
+        <div class="h-count-num" id="headerCount">—</div>
+        <div class="h-count-lbl">Items</div>
+      </div>
+    </div>
+
+    <div class="h-clocks">
+      <div class="clock-cell">
+        <div class="clock-city">Acton, MA</div>
+        <div class="clock-time" id="clock-et">——<span class="clock-colon">:</span><span class="clock-sec" id="sec-et">——</span></div>
+      </div>
+      <div class="clock-cell">
+        <div class="clock-city">San Diego, CA</div>
+        <div class="clock-time" id="clock-pt">——<span class="clock-colon">:</span><span class="clock-sec" id="sec-pt">——</span></div>
+      </div>
+      <div class="clock-cell">
+        <div class="clock-city">Guadalajara, MX</div>
+        <div class="clock-time" id="clock-ct">——<span class="clock-colon">:</span><span class="clock-sec" id="sec-ct">——</span></div>
+      </div>
+    </div>
+
+    <div class="h-status">
+      <div style="display:flex;flex-direction:column;gap:5px;">
+        <div class="sys-row"><span class="sys-key">Source</span><span class="sys-val">SharePoint</span></div>
+        <div class="sys-row"><span class="sys-key">Auth</span><span class="sys-val">M365 Session</span></div>
+        <div class="sys-row"><span class="sys-key">Status</span><span class="sys-val" id="connStatus">Offline</span></div>
+        <div class="sys-row"><span class="sys-key">Synced</span><span class="sys-val" id="lastSync">—</span></div>
+      </div>
+      <button class="sync-btn" onclick="loadItems()">
+        <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M1.5 6a4.5 4.5 0 1 0 .9-2.7" stroke-linecap="round"/>
+          <polyline points="1.5,2 1.5,6 5.5,6" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Sync Feed
+      </button>
+    </div>
+  </header>
+
+  <!-- SPRINT BAR -->
+  <div class="sprint-bar">
+    <div class="sprint-label-cell">
+      <span class="sprint-tag">Sprint</span>
+      <span class="sprint-num" id="sprintNum">—</span>
+    </div>
+
+    <div class="sprint-lines-cell" id="sprintLines">
+      <!-- generated by JS -->
+    </div>
+
+    <div class="sprint-meta-cell">
+      <div class="sprint-stat">
+        <div class="sprint-stat-num" id="sprintDay">—</div>
+        <div class="sprint-stat-lbl">Day</div>
+      </div>
+      <div class="sprint-pct-bar"></div>
+      <div class="sprint-stat">
+        <div class="sprint-stat-num" id="sprintLeft">—</div>
+        <div class="sprint-stat-lbl">Remaining</div>
+      </div>
+      <div class="sprint-pct-bar"></div>
+      <div class="sprint-stat">
+        <div class="sprint-stat-num" id="sprintPct">—</div>
+        <div class="sprint-stat-lbl">Complete</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-cell">
+      <svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6" cy="6" r="4"/><line x1="9.5" y1="9.5" x2="13" y2="13" stroke-linecap="round"/>
+      </svg>
+      <input class="search-input" id="searchInput" placeholder="Search..." oninput="renderFeed()" />
+    </div>
+    <div class="tab-strip">
+      <button class="tab-btn active" data-source="" onclick="setTab(this,'')">All</button>
+      <button class="tab-btn" data-source="Figma"       onclick="setTab(this,'Figma')"><span class="tab-dot" style="background:var(--figma)"></span>Figma</button>
+      <button class="tab-btn" data-source="Teams"       onclick="setTab(this,'Teams')"><span class="tab-dot" style="background:var(--teams)"></span>Teams</button>
+      <button class="tab-btn" data-source="Confluence"  onclick="setTab(this,'Confluence')"><span class="tab-dot" style="background:var(--confluence)"></span>Confluence</button>
+      <button class="tab-btn" data-source="Jira"        onclick="setTab(this,'Jira')"><span class="tab-dot" style="background:var(--jira)"></span>Jira</button>
+      <button class="tab-btn" data-source="Calendar"    onclick="setTab(this,'Calendar')"><span class="tab-dot" style="background:var(--cal)"></span>Cal</button>
+      <button class="tab-btn" id="unseenTab" onclick="toggleUnseen()">Unread <span class="unread-pip" id="unseenCount">0</span></button>
+    </div>
+  </div>
+
+  <!-- AUTH NOTICE -->
+  <div class="auth-note" id="authNote">
+    Auth required — <a href="https://insulet-my.sharepoint.com" target="_blank">sign in to SharePoint ↗</a> then sync.
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sb-section">
+        <div class="sb-label">Stats</div>
+        <div class="stat-grid">
+          <div class="stat-cell"><div class="stat-num" id="statTotal">—</div><div class="stat-lbl">Total</div></div>
+          <div class="stat-cell"><div class="stat-num" id="statUnread" style="color:var(--red)">—</div><div class="stat-lbl">Unread</div></div>
+          <div class="stat-cell"><div class="stat-num" id="statInbox">—</div><div class="stat-lbl">Inbox</div></div>
+          <div class="stat-cell"><div class="stat-num" id="statDone" style="color:var(--figma)">—</div><div class="stat-lbl">Done</div></div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Sources</div>
+        <div class="source-legend">
+          <div class="legend-row"><div class="legend-src"><span class="ldot" style="background:var(--figma)"></span>Figma</div><span class="legend-n" id="ct-figma">—</span></div>
+          <div class="legend-row"><div class="legend-src"><span class="ldot" style="background:var(--teams)"></span>Teams</div><span class="legend-n" id="ct-teams">—</span></div>
+          <div class="legend-row"><div class="legend-src"><span class="ldot" style="background:var(--loop)"></span>Loop</div><span class="legend-n" id="ct-loop">—</span></div>
+          <div class="legend-row"><div class="legend-src"><span class="ldot" style="background:var(--cal)"></span>Calendar</div><span class="legend-n" id="ct-calendar">—</span></div>
+        </div>
+      </div>
+
+      <div class="sb-section">
+        <button class="mark-all-btn" onclick="markAllSeen()">Mark All Read</button>
+      </div>
+
+      <div class="sb-section">
+        <div class="sb-label">Endpoint</div>
+        <span class="cfg-label-txt">SharePoint List URL</span>
+        <input class="cfg-input" id="spUrl" placeholder="https://insulet-my.sharepoint.com/..."/>
+        <button class="cfg-btn" onclick="saveConfig()">Connect</button>
+        <p class="cfg-hint">Uses active M365 session. No data leaves the tenant.</p>
+      </div>
+    </aside>
+
+    <!-- FEED -->
+    <div class="feed-col">
+      <div class="feed-meta">
+        <span class="feed-count" id="feedCount">— / — items</span>
+      </div>
+      <div class="feed-viewport">
+        <div class="feed-list" id="feedList">
+          <div class="empty-state">
+            <div class="state-title">Action Feed</div>
+            <div class="state-sub">Connect SharePoint endpoint</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <footer class="page-footer">
+    <span class="footer-l">Action Feed · Insulet · Internal Use Only</span>
+    <span class="footer-r">Data remains within Microsoft 365</span>
+  </footer>
+</div>
+
+<script>
+/* ═══════════════════════════════════════
+   CLOCKS  — update every 50ms for live ms
+═══════════════════════════════════════ */
+const ZONES = [
+  { id:'et', tz:'America/New_York' },
+  { id:'pt', tz:'America/Los_Angeles' },
+  { id:'ct', tz:'America/Mexico_City' },
+];
+
+function tickClocks() {
+  const now = new Date();
+  ZONES.forEach(({ id, tz }) => {
+    const hhmm = now.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit', hour12:false, timeZone:tz });
+    const ss   = String(now.toLocaleTimeString('en-US', { second:'2-digit', hour12:false, timeZone:tz })).replace(/\D/g,'').padStart(2,'0');
+    const ms   = String(now.getMilliseconds()).padStart(3,'0').slice(0,2);
+    const date = now.toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', timeZone:tz });
+
+    const timeEl = document.getElementById('clock-'+id);
+    const msEl   = document.getElementById('ms-'+id);
+    const dateEl = document.getElementById('date-'+id);
+
+    if (timeEl) timeEl.childNodes[0].textContent = hhmm;
+    if (msEl)   msEl.textContent = ':' + ms;
+    if (dateEl) dateEl.textContent = date;
+  });
+}
+
+/* ═══════════════════════════════════════
+   SPRINT
+═══════════════════════════════════════ */
+function computeSprint() {
+  const now = new Date();
+  const day = now.getDay();
+  const sinceWed = (day + 7 - 3) % 7;
+
+  const sprintStart = new Date(now);
+  sprintStart.setHours(0,0,0,0);
+  sprintStart.setDate(sprintStart.getDate() - sinceWed);
+
+  const sprintEnd = new Date(sprintStart);
+  sprintEnd.setDate(sprintEnd.getDate() + 14);
+
+  const epoch = new Date('2024-01-03');
+  const sprintNum = Math.floor((sprintStart - epoch) / (14 * 86400000)) + 1;
+
+  // Work days only: Mon–Fri = 10 days in a 2-week sprint
+  // Map sprint calendar days 0–13 to work day indices
+  const workDays = [];
+  for (let d = 0; d < 14; d++) {
+    const dt = new Date(sprintStart);
+    dt.setDate(dt.getDate() + d);
+    const dow = dt.getDay();
+    if (dow >= 1 && dow <= 5) workDays.push({ calDay: d, date: dt });
+  }
+
+  const totalMs   = sprintEnd - sprintStart;
+  const elapsedMs = now - sprintStart;
+  const pct       = Math.min(100, Math.round((elapsedMs / totalMs) * 100));
+  const calDayIdx = Math.floor(elapsedMs / 86400000); // 0-based calendar day in sprint
+  const dayFracIntoToday = (elapsedMs % 86400000) / 86400000;
+
+  // Which work-day index are we on?
+  let currentWorkDayIdx = -1;
+  workDays.forEach((wd, i) => {
+    if (wd.calDay <= calDayIdx) currentWorkDayIdx = i;
+  });
+
+  const daysLeft = Math.ceil((sprintEnd - now) / 86400000);
+
+  document.getElementById('sprintNum').textContent = String(sprintNum).padStart(2,'0');
+  document.getElementById('sprintDay').textContent = Math.min(currentWorkDayIdx + 1, workDays.length);
+  document.getElementById('sprintLeft').textContent = Math.max(0, daysLeft) + 'd';
+  document.getElementById('sprintPct').textContent = pct + '%';
+
+  // Build day lines
+  const container = document.getElementById('sprintLines');
+  container.innerHTML = '';
+
+  workDays.forEach((wd, i) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'sprint-day-wrap';
+
+    const line = document.createElement('div');
+    line.className = 'sprint-day-line';
+
+    const fill = document.createElement('div');
+    fill.className = 'sprint-day-fill';
+
+    let fillPct = 0;
+    if (i < currentWorkDayIdx) {
+      // fully past
+      fill.classList.add('past');
+      fillPct = 100;
+    } else if (i === currentWorkDayIdx) {
+      // active — fill by fraction of today elapsed
+      fill.classList.add('active');
+      fillPct = Math.round(dayFracIntoToday * 100);
+    }
+    fill.style.height = fillPct + '%';
+    line.appendChild(fill);
+
+    const num = document.createElement('div');
+    num.className = 'sprint-day-n';
+    num.textContent = String(i + 1).padStart(2,'0');
+    if (i < currentWorkDayIdx)  num.classList.add('past');
+    if (i === currentWorkDayIdx) num.classList.add('active');
+
+    wrap.appendChild(line);
+    wrap.appendChild(num);
+    container.appendChild(wrap);
+  });
+}
+
+/* ═══════════════════════════════════════
+   DATA
+═══════════════════════════════════════ */
+const SP_SEL = "$select=Id,Title,Source,Sender,Message,Timestamp,Location,Link,Status,Seen&$orderby=Timestamp desc&$top=200";
+let spBase = '', allItems = [], activeSource = '', unseenOnly = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+  tickClocks();
+  setInterval(tickClocks, 50);
+  computeSprint();
+  setInterval(computeSprint, 60000);
+
+  const saved = localStorage.getItem('af_nifty');
+  if (saved) {
+    spBase = saved;
+    document.getElementById('spUrl').value = saved;
+    loadItems();
+  } else {
+    document.getElementById('spUrl').value = "https://insulet-my.sharepoint.com/personal/spark2_insulet_com/_api/web/lists/getbytitle('Action Feed')/items";
+  }
+});
+
+function saveConfig() {
+  const v = document.getElementById('spUrl').value.trim();
+  if (!v) return;
+  spBase = v.split('?')[0];
+  localStorage.setItem('af_nifty', spBase);
+  loadItems();
+}
+
+async function loadItems() {
+  if (!spBase) return;
+  document.getElementById('feedList').innerHTML = `<div class="loading-state"><div class="spinner"></div><div class="state-title">Fetching from SharePoint</div></div>`;
+  try {
+    const res = await fetch(`${spBase}?${SP_SEL}`, { headers:{'Accept':'application/json;odata=verbose'}, credentials:'include' });
+    if (res.status === 401 || res.status === 403) {
+      document.getElementById('authNote').style.display = 'block';
+      document.getElementById('feedList').innerHTML = `<div class="empty-state"><div class="state-title" style="color:var(--red)">Auth Failed</div><div class="state-sub">See notice above</div></div>`;
+      return;
+    }
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    document.getElementById('authNote').style.display = 'none';
+    const data = await res.json();
+    allItems = (data.d?.results || data.value || []).map(norm);
+    setStatus('live', 'Live');
+    finalize();
+  } catch(e) {
+    allItems = demoData();
+    setStatus('demo', 'Demo');
+    finalize();
+  }
+}
+
+function norm(r) {
+  return { id:r.Id||r.id, source:r.Source||'Teams', sender:r.Sender||'Unknown', message:r.Message||'',
+    timestamp:r.Timestamp||r.Created||new Date().toISOString(), location:r.Location||'',
+    link:r.Link||'', status:r.Status||'Inbox', seen:r.Seen!==undefined?Boolean(r.Seen):false };
+}
+
+function finalize() {
+  const t = new Date();
+  document.getElementById('lastSync').textContent = t.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  updateSidebar();
+  renderFeed();
+}
+
+function setStatus(cls, label) {
+  const el = document.getElementById('connStatus');
+  el.textContent = label;
+  el.className = 'sys-val ' + cls;
+}
+
+function updateSidebar() {
+  const total  = allItems.length;
+  const unread = allItems.filter(i=>!i.seen).length;
+  const inbox  = allItems.filter(i=>i.status==='Inbox').length;
+  const done   = allItems.filter(i=>i.status==='Done').length;
+
+  document.getElementById('statTotal').textContent  = total;
+  document.getElementById('statUnread').textContent = unread;
+  document.getElementById('statInbox').textContent  = inbox;
+  document.getElementById('statDone').textContent   = done;
+  document.getElementById('headerCount').textContent = total;
+  document.getElementById('unseenCount').textContent = unread;
+
+  ['figma','teams','loop','calendar'].forEach(src => {
+    const n = allItems.filter(i=>i.source.toLowerCase()===src).length;
+    const el = document.getElementById('ct-'+src);
+    if (el) el.textContent = n;
+  });
+}
+
+function renderFeed(animate) {
+  const q = (document.getElementById('searchInput')?.value||'').toLowerCase();
+  let items = [...allItems];
+  if (activeSource)  items = items.filter(i=>i.source===activeSource);
+  if (unseenOnly)    items = items.filter(i=>!i.seen);
+  if (q) items = items.filter(i=>(i.sender+i.message+i.location+i.source).toLowerCase().includes(q));
+
+  document.getElementById('feedCount').textContent = `${items.length} / ${allItems.length} items`;
+
+  const feedList = document.getElementById('feedList');
+
+  function injectHTML() {
+    if (!items.length) {
+      feedList.innerHTML = `<div class="empty-state"><div class="state-title">No Items</div><div class="state-sub">Adjust filters</div></div>`;
+      return;
+    }
+    const groups = {};
+    items.forEach(i => { const b=bucket(i.timestamp); (groups[b]=groups[b]||[]).push(i); });
+    let html = '';
+    Object.entries(groups).forEach(([label, grp]) => {
+      html += `<div class="date-div"><span>${label}</span></div>`;
+      grp.forEach((item, idx) => { html += cardHTML(item, idx); });
+    });
+    feedList.innerHTML = html;
+    feedList.classList.remove('slide-out-left','slide-in-right');
+    void feedList.offsetWidth;
+    feedList.classList.add('slide-in-right');
+  }
+
+  if (animate) {
+    feedList.classList.add('slide-out-left');
+    feedList.addEventListener('animationend', function handler(e) {
+      if (e.animationName === 'slideOutLeft') {
+        feedList.removeEventListener('animationend', handler);
+        injectHTML();
+      }
+    });
+  } else {
+    injectHTML();
+  }
+}
+
+function cardHTML(item, idx) {
+  const delay = Math.min(idx * 20, 180);
+  const uc    = !item.seen ? 'unseen' : '';
+  const dot   = !item.seen ? '<div class="u-dot"></div>' : '';
+  const sc    = `src-tag src-${item.source.toLowerCase()}`;
+  const stc   = `st-pill st-${item.status.toLowerCase()}`;
+  const link  = item.link||'#';
+
+  const vBtn = link !== '#'
+    ? `<a class="open-btn" href="${x(link)}" target="_blank" rel="noopener">Open <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M1.5 8.5L8.5 1.5M5.5 1.5h3v3" stroke-linecap="round" stroke-linejoin="round"/></svg></a>`
+    : `<span class="open-btn" style="opacity:0.25;pointer-events:none">No Link</span>`;
+
+  const eyeOn  = `<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 7s2.2-4.5 6-4.5S13 7 13 7s-2.2 4.5-6 4.5S1 7 1 7z"/><circle cx="7" cy="7" r="1.8"/></svg>`;
+  const eyeOff = `<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3"><path d="M1 7s2.2-4.5 6-4.5S13 7 13 7s-2.2 4.5-6 4.5S1 7 1 7z"/><circle cx="7" cy="7" r="1.8"/><line x1="2" y1="2" x2="12" y2="12" stroke-linecap="round"/></svg>`;
+
+  return `
+<div class="card ${uc}" id="card-${item.id}" style="animation-delay:${delay}ms">
+  <div class="dot-col">${dot}</div>
+  <div class="card-body">
+    <div class="card-top">
+      <span class="${sc}">${item.source}</span>
+      <span class="card-sender">${x(item.sender)}</span>
+      <span class="card-loc">${x(item.location)}</span>
+    </div>
+    <div class="card-msg">${x(item.message)}</div>
+    <div class="card-foot">
+      <span class="card-time">${rel(item.timestamp)}</span>
+      <span class="${stc}">${item.status}</span>
+      <select class="st-select" onchange="chStatus(${item.id},this.value)">
+        <option value="Inbox"   ${item.status==='Inbox'   ?'selected':''}>Inbox</option>
+        <option value="Done"    ${item.status==='Done'    ?'selected':''}>Done</option>
+        <option value="Snoozed" ${item.status==='Snoozed' ?'selected':''}>Snoozed</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-actions">
+    ${vBtn}
+    <button class="eye-btn" title="${item.seen?'Mark Unread':'Mark Read'}" onclick="toggleSeen(${item.id})">${item.seen?eyeOn:eyeOff}</button>
+  </div>
+</div>`;
+}
+
+/* ── actions ── */
+async function toggleSeen(id) {
+  const i = allItems.find(i=>i.id===id); if(!i) return;
+  i.seen = !i.seen; updateSidebar(); renderFeed(false); await patch(id,{Seen:i.seen});
+}
+async function chStatus(id, v) {
+  const i = allItems.find(i=>i.id===id); if(!i) return;
+  i.status = v; updateSidebar(); renderFeed(false); await patch(id,{Status:v});
+}
+async function markAllSeen() {
+  allItems.forEach(i=>i.seen=true); updateSidebar(); renderFeed(false); allItems.forEach(i=>patch(i.id,{Seen:true}));
+}
+
+async function patch(id, fields) {
+  if (!spBase) return;
+  try {
+    const dr = await fetch(spBase.replace(/_api\/.*$/,'_api/contextinfo'),{method:'POST',headers:{'Accept':'application/json;odata=verbose'},credentials:'include'});
+    if (!dr.ok) return;
+    const dj = await dr.json();
+    const digest = dj.d?.GetContextWebInformation?.FormDigestValue;
+    await fetch(`${spBase}(${id})`,{method:'POST',headers:{'Accept':'application/json;odata=verbose','Content-Type':'application/json;odata=verbose','X-HTTP-Method':'MERGE','IF-MATCH':'*','X-RequestDigest':digest||''},credentials:'include',body:JSON.stringify({'__metadata':{'type':'SP.Data.Action_x0020_FeedListItem'},...fields})});
+  } catch(e) {}
+}
+
+/* ── filter / tab ── */
+function setTab(btn, src) {
+  activeSource = src;
+  document.querySelectorAll('[data-source]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderFeed(true); // animate
+}
+
+function toggleUnseen() {
+  unseenOnly = !unseenOnly;
+  document.getElementById('unseenTab').classList.toggle('active', unseenOnly);
+  renderFeed(true); // animate
+}
+
+/* ── utils ── */
+function x(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function rel(ts) {
+  if (!ts) return '—';
+  const s = (Date.now()-new Date(ts).getTime())/1000;
+  if (s<60) return 'Just now'; if (s<3600) return `${Math.round(s/60)}m ago`;
+  if (s<86400) return `${Math.round(s/3600)}h ago`;
+  return new Date(ts).toLocaleDateString([],{month:'short',day:'numeric'});
+}
+function bucket(ts) {
+  if (!ts) return 'Unknown';
+  const d=new Date(ts), diff=(new Date()-d)/86400000;
+  if (diff<1) return 'Today'; if (diff<2) return 'Yesterday';
+  if (diff<7) return d.toLocaleDateString([],{weekday:'long'});
+  return d.toLocaleDateString([],{month:'long',day:'numeric'});
+}
+
+function demoData() {
+  const n=Date.now(), h=v=>new Date(n-v*3600000).toISOString();
+  return [
+    {id:1,source:'Figma',   sender:'Maya Lindström',   message:'Left a comment on "OmniPod 5 App — Onboarding Flow v3": Can we revisit the empty state on step 2? The illustration feels disconnected from the rest of the design language.',timestamp:h(0.5), location:'Figma via Outlook',   link:'https://www.figma.com/file/demo', status:'Inbox',  seen:false},
+    {id:2,source:'Teams',   sender:'James Okonkwo',    message:'Hey — quick question about the accessibility audit findings from last week. Are we tracking the contrast issues in Jira or just in the Figma comments? I want to make sure nothing slips before the FDA submission.',timestamp:h(1.2), location:'#design-systems',     link:'https://teams.microsoft.com/demo',status:'Inbox',  seen:false},
+    {id:3,source:'Figma',   sender:'Priya Nair',       message:'Approved the pump configuration screens. Minor nit on the typography scale — the 11px label might be too small on older Android devices. Otherwise ready to hand off.',timestamp:h(3),   location:'Figma via Outlook',   link:'https://www.figma.com/file/demo2',status:'Inbox',  seen:true},
+    {id:4,source:'Loop',    sender:'Carlos Reyes',     message:'Added a new section to the Q3 design retrospective. Would love your thoughts on the velocity comparison — I think we should use it in the leadership deck.',timestamp:h(5),   location:'Loop — Q3 Retro',     link:'',                               status:'Inbox',  seen:false},
+    {id:5,source:'Teams',   sender:'Sarah Tran',       message:'The engineering team pushed back on the gesture navigation pattern. Saying hit targets are too small for clinical use cases. Can we hop on a quick call tomorrow?',timestamp:h(8),   location:'#product-design',     link:'https://teams.microsoft.com/demo2',status:'Inbox', seen:true},
+    {id:6,source:'Figma',   sender:'Olu Adeyemi',      message:'Flagged the date picker component — it doesn\'t match the new DS tokens we shipped last sprint. Should we create a ticket or fix it directly in the file?',timestamp:h(26),  location:'Figma via Outlook',   link:'https://www.figma.com/file/demo3',status:'Done',   seen:true},
+    {id:7,source:'Calendar',sender:'Insulet Calendar', message:'Design Sync — Weekly cross-functional review. Attendees: Maya, James, Priya, Olu, Sarah, Carlos, Lin. Video call link attached.',timestamp:h(30),  location:'Design Sync · Weekly',link:'',                               status:'Inbox',  seen:false},
+    {id:8,source:'Teams',   sender:'Lin Wei',          message:'Reminder: design review for Bluetooth connectivity error states is tomorrow at 2pm. Come with annotations ready.',timestamp:h(32),  location:'#product-review',     link:'',                               status:'Done',   seen:true},
+    {id:9,source:'Figma',   sender:'Maya Lindström',   message:'Following up — the loading skeleton in the dashboard also uses the old brand blue instead of the new ocean-500 token.',timestamp:h(48),  location:'Figma via Outlook',   link:'https://www.figma.com/file/demo4',status:'Snoozed',seen:true},
+  ];
+}
+</script>
+</body>
+</html>
